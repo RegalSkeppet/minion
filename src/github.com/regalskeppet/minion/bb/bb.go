@@ -3,7 +3,7 @@ package main
 import (
   "os"
   "fmt"
-  "jonassamuelsson.com/bb/action"
+  "github.com/regalskeppet/minion/bb/action"
 )
 
 func main() {

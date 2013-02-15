@@ -10,7 +10,7 @@ func TestApplyWithoutFileAndClosedStdin(t *testing.T) {
     t.Fatal(err)
   }
   err = a(nil)
-  if err != nil {
+  if err == nil {
     t.Fatal(err)
   }
 }
