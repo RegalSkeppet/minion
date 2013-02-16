@@ -58,8 +58,8 @@ func TestParseEncodeContent(t *testing.T) {
   if err != nil {
     t.Fatal(err)
   }
-  if string(orders[0].Details) != "eyJ0ZXN0aW5n" {
-    t.Fatalf("Content should be \"eyJ0ZXN0aW5n\", was \"%s\".", orders[0].Details)
+  if string(orders[0].Details) != "\"eyJ0ZXN0aW5n\"" {
+    t.Fatalf("Content should be \"eyJ0ZXN0aW5n\", was %s.", orders[0].Details)
   }
   os.RemoveAll("/tmp/minion_tests")
 }
