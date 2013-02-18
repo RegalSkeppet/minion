@@ -1,77 +1,51 @@
 package lib
 
 import (
-  "encoding/json"
-  "os"
-  "encoding/base64"
-  "io/ioutil"
   "io"
   "fmt"
+  "io/ioutil"
+  "encoding/json"
+  "encoding/base64"
+  "os"
 )
 
-type fileOrderDescription struct {
-  Path string
-  Ensure string
-  Content string
-  ContentFile string
-}
+const helpText = `A File order will make sure a file has a certain content. Reads config from stdin:
+  {
+    "path": "/absolute/path/to/file",
+    "content": "base64 encoded content"
+  }
+`
 
 type fileOrder struct {
   Path string
   Content string
+  Mode string
 }
 
-func decodeFileOrderDescription(reader io.Reader) (fileOrderDescription, error) {
-  desc := fileOrderDescription{}
+func Run(args []string, reader io.Reader) error {
+  if len(args) > 1 && args[1] == "help" {
+    fmt.Println(helpText)
+    return nil
+  }
+  var order fileOrder
   dec := json.NewDecoder(reader)
-  err := dec.Decode(&desc)
-  return desc, err
+  err := dec.Decode(&order)
+  if err != nil {
+    return err
+  }
+  content, err := base64.StdEncoding.DecodeString(order.Content)
+  if err != nil {
+    return err
+  }
+  var mode os.FileMode
+  if order.Mode == "" {
+    mode = 0644
+  } else {
+    _, err = fmt.Sscanf(order.Mode, "%o", &mode)
+    if err != nil {
+      return err
+    }
+  }
+  err = ioutil.WriteFile(order.Path, content, mode)
+  return err
 }
-
-func createFileOrder(desc fileOrderDescription) (*fileOrder, error) {
-  file, err := os.Open(desc.ContentFile)
-  if err != nil {
-    return nil, err
-  }
-  bytes, err := ioutil.ReadAll(file)
-  if err != nil {
-    return nil, err
-  }
-  order := new(fileOrder)
-  order.Path = desc.Path
-  order.Content = base64.StdEncoding.EncodeToString(bytes)
-  return order, nil
-}
-
-func Run(args []string, reader io.Reader) {
-  if len(args) > 2 && args[2] == "help" {
-    fmt.Println(`Order: File
-      {
-        "path": "/absolute/path/to/file",
-        "content": "simple content"
-      }
-
-      "path": Is the path of the file on the target system
-      "ensure": Can be "present" (to make sure the file exists)
-                      or
-                      "absent" (to make sure the file doesn't exist)
-      "content": Should be use if the content of the file is simple (a single row with allowed characters)
-    `)
-  }
-}
-
-/*func ApplyFile(conf *FileConfig) int64 {
-  file, err := os.Create(conf.Path);
-  if err != nil {
-    log.Fatal(err)
-  }
-  content, err := base64.StdEncoding.DecodeString(conf.ContentFile)
-  if err != nil {
-    log.Fatal(err)
-  }
-  b, err := file.Write(content)
-  if err != nil {
-    log.Fatal(err)
-  }
-  return int64(b)
-}*/
