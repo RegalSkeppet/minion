@@ -1,4 +1,4 @@
 minion
 ======
 
-minion test
+minion test 2
