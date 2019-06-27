@@ -1,4 +1,0 @@
-minion
-======
-
-minion test
